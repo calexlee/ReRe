@@ -48,7 +48,7 @@ class NPCHandler:
         )
         
         # Store the interaction in memory
-        self._store_memory(npc_id, player_input, response.choices[0].message.content)
+        self._store_memory(npc_id, player_input, response.choices[0].message.content, context)
         
         return response.choices[0].message.content
 
@@ -70,7 +70,7 @@ class NPCHandler:
         memories = self.npc_memories[npc_id][-3:]
         return [memory["content"] for memory in memories]
 
-    def _store_memory(self, npc_id: str, player_input: str, npc_response: str):
+    def _store_memory(self, npc_id: str, player_input: str, npc_response: str, context: Dict):
         """Store an interaction in memory"""
         if npc_id not in self.npc_memories:
             self.npc_memories[npc_id] = []

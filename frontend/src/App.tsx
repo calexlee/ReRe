@@ -2,19 +2,21 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { GameState, NPC, InteractionResult } from './types/game'
 
+const initialGameState: GameState = {
+  currentLoop: 1,
+  playerKnowledge: [],
+  worldState: {
+    time: "08:00",
+    location: "village_square",
+    events: [],
+    inventory: [],
+    npcStates: {}
+  },
+  npcMemories: {}
+};
+
 function App() {
-  const [gameState, setGameState] = useState<GameState>({
-    currentLoop: 1,
-    playerKnowledge: [],
-    worldState: {
-      time: "08:00",
-      location: "village_square",
-      events: [],
-      inventory: [],
-      npcStates: {}
-    },
-    npcMemories: {}
-  });
+  const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [currentNPC, setCurrentNPC] = useState<NPC | null>(null);
   const [playerInput, setPlayerInput] = useState('');
   const [npcResponse, setNpcResponse] = useState('');
@@ -33,9 +35,24 @@ function App() {
     try {
       const response = await fetch('http://localhost:8000/game/state');
       const data = await response.json();
-      setGameState(data);
+      // Ensure all required fields are present
+      const state: GameState = {
+        currentLoop: data.currentLoop || 1,
+        playerKnowledge: data.playerKnowledge || [],
+        worldState: {
+          time: data.worldState?.time || "08:00",
+          location: data.worldState?.location || "village_square",
+          events: data.worldState?.events || [],
+          inventory: data.worldState?.inventory || [],
+          npcStates: data.worldState?.npcStates || {}
+        },
+        npcMemories: data.npcMemories || {}
+      };
+      setGameState(state);
     } catch (error) {
       console.error('Error fetching game state:', error);
+      // Fallback to initial state if fetch fails
+      setGameState(initialGameState);
     }
   };
 
@@ -46,6 +63,7 @@ function App() {
       setLocations(data.locations);
     } catch (error) {
       console.error('Error fetching locations:', error);
+      setLocations(['village_square', 'forge', 'apothecary_shop']);
     }
   };
 
@@ -56,6 +74,7 @@ function App() {
       setLocationNPCs(data.npcs);
     } catch (error) {
       console.error('Error fetching location NPCs:', error);
+      setLocationNPCs([]);
     }
   };
 
@@ -155,8 +174,8 @@ function App() {
                 <h3 className="font-semibold">{npc.name}</h3>
                 <p className="text-sm text-gray-400">{npc.description}</p>
                 <div className="mt-2 text-sm">
-                  <span className="text-blue-400">Mood: {npc.state.mood}</span>
-                  <span className="ml-4 text-green-400">Trust: {npc.state.trustLevel}</span>
+                  <span className="text-blue-400">Mood: {npc.state?.mood || 'neutral'}</span>
+                  <span className="ml-4 text-green-400">Trust: {npc.state?.trustLevel || 0}</span>
                 </div>
               </button>
             ))}

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional, Dict
 import os
@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from game.state_manager import GameState
 from game.npc_manager import NPCManager
 from ai.npc_handler import NPCHandler
+from pydantic import BaseModel
 
 # Load environment variables
 load_dotenv()
@@ -30,6 +31,9 @@ game_state = GameState()
 npc_manager = NPCManager()
 npc_handler = NPCHandler()
 
+class InteractionRequest(BaseModel):
+    player_input: str
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to TimeLoop Tales API"}
@@ -37,7 +41,19 @@ async def root():
 @app.get("/game/state")
 async def get_game_state():
     """Get the current game state"""
-    return game_state.to_dict()
+    # Ensure the game state has all required fields
+    state = game_state.to_dict()
+    if "worldState" not in state:
+        state["worldState"] = {
+            "time": "08:00",
+            "location": "village_square",
+            "events": [],
+            "inventory": [],
+            "npcStates": {}
+        }
+    if "npcMemories" not in state:
+        state["npcMemories"] = {}
+    return state
 
 @app.post("/game/reset")
 async def reset_game():
@@ -80,10 +96,10 @@ async def get_npc(npc_id: str):
     return npc.get_state()
 
 @app.post("/npc/{npc_id}/interact")
-async def interact_with_npc(npc_id: str, player_input: str):
+async def interact_with_npc(npc_id: str, request: InteractionRequest = Body(...)):
     """Handle player interaction with an NPC"""
     # Process the interaction through the NPC manager
-    interaction_result = npc_manager.process_interaction(npc_id, player_input, game_state.to_dict())
+    interaction_result = npc_manager.process_interaction(npc_id, request.player_input, game_state.to_dict())
     
     if "error" in interaction_result:
         raise HTTPException(status_code=404, detail=interaction_result["error"])
@@ -91,11 +107,11 @@ async def interact_with_npc(npc_id: str, player_input: str):
     # Get AI-generated response
     ai_response = npc_handler.get_npc_response(
         npc_id=npc_id,
-        player_input=player_input,
+        player_input=request.player_input,
         context={
             "current_loop": game_state.current_loop,
-            "time": game_state.world_state["time"],
-            "location": game_state.world_state["location"]
+            "time": game_state.world_state.get("time", "08:00"),
+            "location": game_state.world_state.get("location", "village_square")
         }
     )
 
@@ -104,8 +120,8 @@ async def interact_with_npc(npc_id: str, player_input: str):
     game_state.add_event({
         "type": "npc_interaction",
         "npc_id": npc_id,
-        "player_input": player_input,
-        "timestamp": game_state.world_state["time"]
+        "player_input": request.player_input,
+        "timestamp": game_state.world_state.get("time", "08:00")
     })
 
     return {
