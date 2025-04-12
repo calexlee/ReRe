@@ -12,8 +12,8 @@ from pydantic import BaseModel
 load_dotenv()
 
 app = FastAPI(
-    title="TimeLoop Tales API",
-    description="Backend API for the TimeLoop Tales game",
+    title="ReRe API",
+    description="Backend API for the ReRe game",
     version="1.0.0"
 )
 
@@ -36,7 +36,7 @@ class InteractionRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to TimeLoop Tales API"}
+    return {"message": "Welcome to ReRe API"}
 
 @app.get("/game/state")
 async def get_game_state():

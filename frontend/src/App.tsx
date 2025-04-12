@@ -133,7 +133,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">TimeLoop Tales</h1>
+        <h1 className="text-4xl font-bold mb-2">ReRe</h1>
         <div className="flex justify-between items-center">
           <p className="text-gray-400">Loop #{gameState.currentLoop}</p>
           <p className="text-gray-400">Time: {gameState.worldState.time}</p>

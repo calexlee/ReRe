@@ -1,6 +1,46 @@
-# TimeLoop Tales
+# ReRe
 
-A browser-based, AI-driven narrative RPG where players are trapped in a time loop that resets on death. Each loop provides more knowledge, dialogue options, and clues about how to survive until the next day.
+A browser-based, AI-driven narrative RPG where the player is trapped in a time loop that resets on death. Each loop gives them more knowledge, dialogue options, and clues about how to survive until the next day.
+
+## Setup
+
+1. Install dependencies:
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
+
+# Frontend
+cd frontend
+npm install
+```
+
+2. Set up environment variables:
+```bash
+# Backend
+cp backend/.env.example backend/.env
+# Edit backend/.env with your API keys
+
+# Frontend
+cp frontend/.env.example frontend/.env
+```
+
+3. Start the development servers:
+```bash
+# Backend
+cd backend
+uvicorn main:app --reload
+
+# Frontend
+cd frontend
+npm run dev
+```
+
+## Project Structure
+
+- `backend/`: FastAPI server with game logic and AI integration
+- `frontend/`: React frontend with TypeScript
+- `docs/`: Project documentation
 
 ## Project Structure
 

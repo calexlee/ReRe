@@ -1,4 +1,4 @@
-## 🎮 **Game Concept: "TimeLoop Tales"**
+## 🎮 **Game Concept: "ReRe"**
 
 ### 🧩 **Core Idea**
 A browser-based, AI-driven narrative RPG where the player is trapped in a **time loop that resets on death**. Each loop gives them more knowledge, dialogue options, and clues about how to survive until the next day. The **setting is modular**, allowing for replayability and custom worlds (e.g., noir city, space station, fantasy village).
@@ -8,7 +8,7 @@ A browser-based, AI-driven narrative RPG where the player is trapped in a **time
 ### 🧠 **AI Features**
 1. **AI-Generated NPC Dialogue**  
    - Each character uses an LLM (like GPT or similar) with a **persona** and memory of prior loops.
-   - Dialogue can dynamically change based on the player’s previous actions—even if they "never happened" this loop.
+   - Dialogue can dynamically change based on the player's previous actions—even if they "never happened" this loop.
 
 2. **Dynamic World State**  
    - The game engine uses the player's past runs to subtly change world variables: NPC suspicions, items available, alternate routes.
@@ -21,7 +21,7 @@ A browser-based, AI-driven narrative RPG where the player is trapped in a **time
 ---
 
 ### 🕹️ **Gameplay Loop**
-- Choose a setting (e.g., “Cyberpunk Megacity” or “Cursed Renaissance Town”).
+- Choose a setting (e.g., "Cyberpunk Megacity" or "Cursed Renaissance Town").
 - Wake up at 8:00 a.m. with limited time to explore, talk to NPCs, gather clues.
 - On death (or end of day), you reset—but retain **knowledge** and **dialogue memory**.
 - Survive until the next day (e.g., escape, stop an assassination, solve a puzzle).
@@ -44,7 +44,7 @@ A browser-based, AI-driven narrative RPG where the player is trapped in a **time
 - 1 setting (e.g., dark fantasy village during a mysterious plague)
 - 3–5 NPCs with persistent dialogue memory
 - 1 mystery/death event that loops
-- 1 “true” way to survive to the next day
+- 1 "true" way to survive to the next day
 - Basic vector memory per NPC (prior loops, what you told them, etc.)
 
 ---
