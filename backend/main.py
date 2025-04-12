@@ -1,8 +1,11 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Optional
+from typing import List, Optional, Dict
 import os
 from dotenv import load_dotenv
+from game.state_manager import GameState
+from game.npc_manager import NPCManager
+from ai.npc_handler import NPCHandler
 
 # Load environment variables
 load_dotenv()
@@ -22,16 +25,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Game state models
-class GameState:
-    def __init__(self):
-        self.current_loop = 1
-        self.npc_memories = {}
-        self.player_knowledge = set()
-        self.world_state = {}
-
-# Global game state (in production, this would be in a database)
+# Initialize game components
 game_state = GameState()
+npc_manager = NPCManager()
+npc_handler = NPCHandler()
 
 @app.get("/")
 async def root():
@@ -40,38 +37,93 @@ async def root():
 @app.get("/game/state")
 async def get_game_state():
     """Get the current game state"""
-    return {
-        "current_loop": game_state.current_loop,
-        "player_knowledge": list(game_state.player_knowledge),
-        "world_state": game_state.world_state
-    }
+    return game_state.to_dict()
 
 @app.post("/game/reset")
 async def reset_game():
     """Reset the game state while preserving player knowledge"""
-    game_state.current_loop += 1
-    # Preserve player knowledge but reset other states
     preserved_knowledge = game_state.player_knowledge.copy()
     game_state.__init__()
     game_state.player_knowledge = preserved_knowledge
+    game_state.current_loop += 1
     return {"message": "Game reset", "new_loop": game_state.current_loop}
 
-@app.get("/npc/{npc_id}/memory")
-async def get_npc_memory(npc_id: str):
-    """Get an NPC's memory of previous loops"""
-    if npc_id not in game_state.npc_memories:
+@app.get("/game/locations")
+async def get_locations():
+    """Get all available locations in the game"""
+    return {
+        "locations": [
+            "village_square",
+            "forge",
+            "apothecary_shop",
+            "tavern",
+            "temple",
+            "market"
+        ]
+    }
+
+@app.get("/game/location/{location_id}/npcs")
+async def get_npcs_at_location(location_id: str):
+    """Get all NPCs at a specific location"""
+    npcs = npc_manager.get_npcs_at_location(location_id)
+    return {
+        "location": location_id,
+        "npcs": [npc.get_state() for npc in npcs]
+    }
+
+@app.get("/npc/{npc_id}")
+async def get_npc(npc_id: str):
+    """Get information about a specific NPC"""
+    npc = npc_manager.get_npc(npc_id)
+    if not npc:
         raise HTTPException(status_code=404, detail="NPC not found")
-    return game_state.npc_memories[npc_id]
+    return npc.get_state()
 
 @app.post("/npc/{npc_id}/interact")
 async def interact_with_npc(npc_id: str, player_input: str):
     """Handle player interaction with an NPC"""
-    # TODO: Implement AI-driven NPC response
-    # This will be expanded to use OpenAI for dynamic responses
+    # Process the interaction through the NPC manager
+    interaction_result = npc_manager.process_interaction(npc_id, player_input, game_state.to_dict())
+    
+    if "error" in interaction_result:
+        raise HTTPException(status_code=404, detail=interaction_result["error"])
+
+    # Get AI-generated response
+    ai_response = npc_handler.get_npc_response(
+        npc_id=npc_id,
+        player_input=player_input,
+        context={
+            "current_loop": game_state.current_loop,
+            "time": game_state.world_state["time"],
+            "location": game_state.world_state["location"]
+        }
+    )
+
+    # Update game state with interaction results
+    game_state.advance_time(5)  # Each interaction takes 5 minutes
+    game_state.add_event({
+        "type": "npc_interaction",
+        "npc_id": npc_id,
+        "player_input": player_input,
+        "timestamp": game_state.world_state["time"]
+    })
+
     return {
-        "response": f"NPC {npc_id} received: {player_input}",
-        "memory_updated": False
+        "response": ai_response,
+        "state_changes": interaction_result["state_changes"],
+        "time_advanced": True
     }
+
+@app.post("/game/player/knowledge")
+async def add_player_knowledge(knowledge: str):
+    """Add new knowledge to player's memory"""
+    game_state.add_player_knowledge(knowledge)
+    return {"message": "Knowledge added", "knowledge": knowledge}
+
+@app.get("/game/player/knowledge")
+async def get_player_knowledge():
+    """Get all player knowledge"""
+    return {"knowledge": list(game_state.player_knowledge)}
 
 if __name__ == "__main__":
     import uvicorn

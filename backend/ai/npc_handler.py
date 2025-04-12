@@ -1,31 +1,22 @@
 import os
 from openai import OpenAI
 from typing import Dict, List, Optional
-import pinecone
 from dotenv import load_dotenv
+import httpx
 
 load_dotenv()
 
 class NPCHandler:
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.pinecone_index = None
-        self.setup_pinecone()
-        
-    def setup_pinecone(self):
-        """Initialize Pinecone for vector storage of NPC memories"""
-        pinecone.init(
-            api_key=os.getenv("PINECONE_API_KEY"),
-            environment=os.getenv("PINECONE_ENVIRONMENT")
+        # Create a custom HTTP client without proxies
+        http_client = httpx.Client()
+        # Initialize OpenAI client with the custom HTTP client
+        self.client = OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            http_client=http_client
         )
-        index_name = "npc-memories"
-        if index_name not in pinecone.list_indexes():
-            pinecone.create_index(
-                index_name,
-                dimension=1536,  # OpenAI embedding dimension
-                metric="cosine"
-            )
-        self.pinecone_index = pinecone.Index(index_name)
+        # Simple in-memory storage for NPC memories
+        self.npc_memories: Dict[str, List[Dict]] = {}
 
     def get_npc_response(self, npc_id: str, player_input: str, context: Dict) -> str:
         """
@@ -39,7 +30,7 @@ class NPCHandler:
         Returns:
             str: Generated response from the NPC
         """
-        # Retrieve relevant memories from vector store
+        # Get relevant memories from in-memory storage
         memories = self._get_relevant_memories(npc_id, player_input)
         
         # Construct the prompt with context and memories
@@ -47,7 +38,7 @@ class NPCHandler:
         
         # Generate response using OpenAI
         response = self.client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-3.5-turbo",  # Using GPT-3.5-turbo for cost efficiency
             messages=[
                 {"role": "system", "content": f"You are {npc_id}, a character in a time loop game."},
                 {"role": "user", "content": prompt}
@@ -56,11 +47,14 @@ class NPCHandler:
             max_tokens=150
         )
         
+        # Store the interaction in memory
+        self._store_memory(npc_id, player_input, response.choices[0].message.content)
+        
         return response.choices[0].message.content
 
     def _get_relevant_memories(self, npc_id: str, query: str) -> List[str]:
         """
-        Retrieve relevant memories from the vector store
+        Get relevant memories from in-memory storage
         
         Args:
             npc_id: NPC identifier
@@ -69,20 +63,23 @@ class NPCHandler:
         Returns:
             List of relevant memory texts
         """
-        # Generate embedding for the query
-        query_embedding = self.client.embeddings.create(
-            input=query,
-            model="text-embedding-ada-002"
-        ).data[0].embedding
+        if npc_id not in self.npc_memories:
+            return []
         
-        # Query Pinecone for relevant memories
-        results = self.pinecone_index.query(
-            vector=query_embedding,
-            top_k=3,
-            filter={"npc_id": npc_id}
-        )
-        
-        return [match.metadata["text"] for match in results.matches]
+        # For MVP, just return the last 3 memories
+        memories = self.npc_memories[npc_id][-3:]
+        return [memory["content"] for memory in memories]
+
+    def _store_memory(self, npc_id: str, player_input: str, npc_response: str):
+        """Store an interaction in memory"""
+        if npc_id not in self.npc_memories:
+            self.npc_memories[npc_id] = []
+            
+        self.npc_memories[npc_id].append({
+            "player_input": player_input,
+            "content": npc_response,
+            "timestamp": context.get('time', 'unknown')
+        })
 
     def _construct_prompt(self, npc_id: str, player_input: str, context: Dict, memories: List[str]) -> str:
         """
@@ -105,7 +102,7 @@ class NPCHandler:
         - Time of day: {context.get('time', 'morning')}
         - Location: {context.get('location', 'unknown')}
         
-        Relevant memories:
+        Previous interactions:
         {memory_context}
         
         Player says: "{player_input}"
