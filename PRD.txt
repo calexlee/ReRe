@@ -1,0 +1,57 @@
+## 🎮 **Game Concept: "TimeLoop Tales"**
+
+### 🧩 **Core Idea**
+A browser-based, AI-driven narrative RPG where the player is trapped in a **time loop that resets on death**. Each loop gives them more knowledge, dialogue options, and clues about how to survive until the next day. The **setting is modular**, allowing for replayability and custom worlds (e.g., noir city, space station, fantasy village).
+
+---
+
+### 🧠 **AI Features**
+1. **AI-Generated NPC Dialogue**  
+   - Each character uses an LLM (like GPT or similar) with a **persona** and memory of prior loops.
+   - Dialogue can dynamically change based on the player’s previous actions—even if they "never happened" this loop.
+
+2. **Dynamic World State**  
+   - The game engine uses the player's past runs to subtly change world variables: NPC suspicions, items available, alternate routes.
+   - Optional: fine-tuned memory graph to simulate consequences and world knowledge.
+
+3. **Procedural Events**  
+   - Events (murders, power outages, betrayals, etc.) can be procedurally generated or modified based on choices.
+   - AI decides which clues are available, which ones are red herrings.
+
+---
+
+### 🕹️ **Gameplay Loop**
+- Choose a setting (e.g., “Cyberpunk Megacity” or “Cursed Renaissance Town”).
+- Wake up at 8:00 a.m. with limited time to explore, talk to NPCs, gather clues.
+- On death (or end of day), you reset—but retain **knowledge** and **dialogue memory**.
+- Survive until the next day (e.g., escape, stop an assassination, solve a puzzle).
+- Each loop reveals new truths or AI-created twists.
+
+---
+
+### ⚙️ **Technical Stack (MVP Suggestion)**
+- **Frontend:** React + Tailwind (for slick UI), game engine elements via Pixi.js or Phaser for interaction
+- **Backend:** Python (FastAPI) or Node.js for game logic
+- **AI:**
+  - GPT-4 or Claude for NPC dialog + story logic
+  - Pinecone/FAISS for memory vector search per character
+  - Simple rules engine or fine-tuned transformer for event generation
+- **Storage:** Supabase or Firebase for game state & user sessions
+
+---
+
+### 🧪 **MVP Scope**
+- 1 setting (e.g., dark fantasy village during a mysterious plague)
+- 3–5 NPCs with persistent dialogue memory
+- 1 mystery/death event that loops
+- 1 “true” way to survive to the next day
+- Basic vector memory per NPC (prior loops, what you told them, etc.)
+
+---
+
+### 🔄 **Replayability**
+- Multiple endings per setting
+- Unlock new settings (sci-fi, noir, historical) after survival
+- Let advanced players **create their own settings and characters**
+
+---
