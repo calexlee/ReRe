@@ -1,0 +1,74 @@
+{
+  "npcs": [
+    {
+      "id": "elder_thalric",
+      "name": "Elder Thalric",
+      "description": "The village elder, wise but secretive. He seems to know more than he lets on.",
+      "personality": "Wise, cautious, and somewhat mysterious. He speaks in riddles and often seems to be testing the player.",
+      "goals": ["Protect the village", "Maintain the time loop", "Guide the player"],
+      "fears": ["The loop breaking", "The village being destroyed", "Losing control"],
+      "secrets": ["Knows about the time loop", "Has survived multiple loops", "Can manipulate time"],
+      "defaultLocation": "village_square",
+      "initialMood": "neutral",
+      "initialTrustLevel": 0
+    },
+    {
+      "id": "blacksmith",
+      "name": "Gorrik Ironfist",
+      "description": "A gruff but skilled dwarven blacksmith who runs the local forge.",
+      "personality": "Stoic, hardworking, and values craftsmanship above all else.",
+      "goals": [
+        "Create the finest weapons in the land",
+        "Pass on his knowledge to a worthy apprentice",
+        "Find rare materials for his craft"
+      ],
+      "fears": [
+        "His forge being destroyed",
+        "His work being stolen or copied",
+        "Running out of quality materials"
+      ],
+      "secrets": [
+        "He has a hidden stash of rare metals",
+        "He once forged weapons for the dark lord"
+      ],
+      "defaultLocation": "forge",
+      "initialMood": "neutral",
+      "initialTrustLevel": 0
+    },
+    {
+      "id": "innkeeper",
+      "name": "Mara Silverleaf",
+      "description": "A cheerful half-elf who runs the local inn.",
+      "personality": "Friendly, observant, and always ready with a story or advice.",
+      "goals": [
+        "Make her inn the most welcoming place in town",
+        "Learn more about her elven heritage",
+        "Help travelers in need"
+      ],
+      "fears": [
+        "Losing her inn",
+        "Her past catching up with her",
+        "Being alone"
+      ],
+      "secrets": [
+        "She's on the run from her noble family",
+        "She has a magical amulet that helps her see the truth"
+      ],
+      "defaultLocation": "inn",
+      "initialMood": "friendly",
+      "initialTrustLevel": 1
+    },
+    {
+      "id": "guard",
+      "name": "Captain Roderick",
+      "description": "The village's head guard, a stern but fair human who takes his duty seriously.",
+      "personality": "Disciplined, loyal, and protective. He follows the rules but knows when to bend them.",
+      "goals": ["Keep the village safe", "Train competent guards", "Maintain order"],
+      "fears": ["Failing to protect the village", "Corruption in the guard", "Losing control"],
+      "secrets": ["He has a soft spot for children", "He's secretly in love with the innkeeper"],
+      "defaultLocation": "guard_post",
+      "initialMood": "serious",
+      "initialTrustLevel": 40
+    }
+  ]
+} 

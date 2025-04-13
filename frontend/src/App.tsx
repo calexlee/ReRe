@@ -23,9 +23,9 @@ function App() {
   const [locations, setLocations] = useState<string[]>([]);
   const [currentLocation, setCurrentLocation] = useState('village_square');
   const [locationNPCs, setLocationNPCs] = useState<NPC[]>([]);
+  const [chatHistory, setChatHistory] = useState<{ speaker: string; message: string }[]>([]);
 
   useEffect(() => {
-    // Fetch initial game state
     fetchGameState();
     fetchLocations();
     fetchLocationNPCs(currentLocation);
@@ -85,6 +85,11 @@ function App() {
     setCurrentNPC(npc);
     setNpcResponse('...');
     
+    // Add player message to chat history
+    if (playerInput.trim()) {
+      setChatHistory(prev => [...prev, { speaker: 'You', message: playerInput }]);
+    }
+    
     try {
       const response = await fetch(`http://localhost:8000/npc/${npcId}/interact`, {
         method: 'POST',
@@ -97,7 +102,9 @@ function App() {
       setNpcResponse(data.response);
       setPlayerInput('');
       
-      // Update game state after interaction
+      // Add NPC response to chat history
+      setChatHistory(prev => [...prev, { speaker: npc.name, message: data.response }]);
+      
       fetchGameState();
       fetchLocationNPCs(currentLocation);
     } catch (error) {
@@ -131,106 +138,142 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">ReRe</h1>
-        <div className="flex justify-between items-center">
-          <p className="text-gray-400">Loop #{gameState.currentLoop}</p>
-          <p className="text-gray-400">Time: {gameState.worldState.time}</p>
-        </div>
-      </header>
-
-      <div className="grid grid-cols-4 gap-8">
-        {/* Locations */}
-        <div className="bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-2xl font-semibold mb-4">Locations</h2>
-          <div className="space-y-2">
-            {locations.map(location => (
-              <button
-                key={location}
-                onClick={() => changeLocation(location)}
-                className={`w-full p-3 rounded-lg transition-colors ${
-                  currentLocation === location
-                    ? 'bg-blue-600 hover:bg-blue-500'
-                    : 'bg-gray-700 hover:bg-gray-600'
-                }`}
-              >
-                {location.replace('_', ' ')}
-              </button>
-            ))}
+    <div className="h-screen flex flex-col bg-gray-900 text-white overflow-hidden">
+      {/* Top Bar */}
+      <div className="flex-none bg-gray-800/50 backdrop-blur-sm p-3 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-xl font-bold">ReRe</h1>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-400">Loop #{gameState.currentLoop}</span>
+            <span className="text-sm text-gray-400">Time: {gameState.worldState.time}</span>
+            <button
+              onClick={resetGame}
+              className="px-2 py-1 bg-red-600/50 hover:bg-red-600 rounded-lg transition-colors text-xs"
+            >
+              Reset Loop
+            </button>
           </div>
-        </div>
-
-        {/* NPC List */}
-        <div className="bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-2xl font-semibold mb-4">Current Location: {currentLocation.replace('_', ' ')}</h2>
-          <div className="space-y-4">
-            {locationNPCs.map(npc => (
-              <button
-                key={npc.id}
-                onClick={() => handleNPCInteraction(npc.id)}
-                className="w-full p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                <h3 className="font-semibold">{npc.name}</h3>
-                <p className="text-sm text-gray-400">{npc.description}</p>
-                <div className="mt-2 text-sm">
-                  <span className="text-blue-400">Mood: {npc.state?.mood || 'neutral'}</span>
-                  <span className="ml-4 text-green-400">Trust: {npc.state?.trustLevel || 0}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Interaction Area */}
-        <div className="col-span-2 bg-gray-800 p-6 rounded-lg">
-          {currentNPC ? (
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Talking to {currentNPC.name}</h2>
-              <div className="mb-4 p-4 bg-gray-700 rounded-lg min-h-[200px]">
-                {npcResponse}
-              </div>
-              <div className="flex gap-4">
-                <input
-                  type="text"
-                  value={playerInput}
-                  onChange={(e) => setPlayerInput(e.target.value)}
-                  placeholder="What would you like to say?"
-                  className="flex-1 p-2 bg-gray-700 rounded-lg"
-                  onKeyPress={(e) => e.key === 'Enter' && handleNPCInteraction(currentNPC.id)}
-                />
-                <button
-                  onClick={() => handleNPCInteraction(currentNPC.id)}
-                  className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-500 transition-colors"
-                >
-                  Send
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center text-gray-400">
-              Select an NPC to interact with
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Game Controls */}
-      <div className="mt-8 flex justify-between">
-        <div className="bg-gray-800 p-4 rounded-lg">
-          <h3 className="font-semibold mb-2">Player Knowledge</h3>
-          <ul className="space-y-1">
-            {gameState.playerKnowledge.map((knowledge, index) => (
-              <li key={index} className="text-sm text-gray-400">{knowledge}</li>
-            ))}
-          </ul>
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full p-3">
+          <div className="grid grid-cols-12 h-full gap-3">
+            {/* Left Sidebar - Minimap and NPCs */}
+            <div className="col-span-3 flex flex-col gap-3 h-full">
+              {/* Minimap */}
+              <div className="flex-none bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 border border-gray-700">
+                <h2 className="text-xs font-semibold mb-2 text-gray-400">Locations</h2>
+                <div className="grid grid-cols-2 gap-1">
+                  {locations.map(location => (
+                    <button
+                      key={location}
+                      onClick={() => changeLocation(location)}
+                      className={`p-1.5 rounded-lg text-xs transition-all ${
+                        currentLocation === location
+                          ? 'bg-blue-600/50 border border-blue-500'
+                          : 'bg-gray-700/50 hover:bg-gray-700 border border-gray-600'
+                      }`}
+                    >
+                      {location.replace('_', ' ')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* NPC List */}
+              <div className="flex-1 bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 border border-gray-700 overflow-y-auto">
+                <h2 className="text-xs font-semibold mb-1 text-gray-400">Current Location</h2>
+                <p className="text-sm mb-2">{currentLocation.replace('_', ' ')}</p>
+                <div className="space-y-1.5">
+                  {locationNPCs.map(npc => (
+                    <button
+                      key={npc.id}
+                      onClick={() => handleNPCInteraction(npc.id)}
+                      className={`w-full p-2 rounded-lg transition-all ${
+                        currentNPC?.id === npc.id
+                          ? 'bg-blue-600/50 border border-blue-500'
+                          : 'bg-gray-700/50 hover:bg-gray-700 border border-gray-600'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-medium">{npc.name}</h3>
+                        <div className="flex gap-1">
+                          <span className="text-[10px] text-blue-400">{npc.state?.mood || 'neutral'}</span>
+                          <span className="text-[10px] text-green-400">{npc.state?.trustLevel || 0}</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">{npc.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Main Chat Area */}
+            <div className="col-span-9 h-full">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700 h-full flex flex-col">
+                {/* Chat Header */}
+                <div className="flex-none p-3 border-b border-gray-700">
+                  <h2 className="text-lg font-semibold">
+                    {currentNPC ? `Talking to ${currentNPC.name}` : 'Select an NPC to interact'}
+                  </h2>
+                </div>
+
+                {/* Chat Messages */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                  {chatHistory.map((chat, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${chat.speaker === 'You' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[85%] p-2 rounded-lg ${
+                          chat.speaker === 'You'
+                            ? 'bg-blue-600/50 border border-blue-500'
+                            : 'bg-gray-700/50 border border-gray-600'
+                        }`}
+                      >
+                        <div className="text-xs font-medium mb-0.5">{chat.speaker}</div>
+                        <div className="text-sm text-gray-200">{chat.message}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {npcResponse === '...' && (
+                    <div className="flex justify-start">
+                      <div className="bg-gray-700/50 border border-gray-600 p-2 rounded-lg">
+                        <div className="text-xs font-medium mb-0.5">{currentNPC?.name}</div>
+                        <div className="text-sm text-gray-200">...</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input Area */}
+                <div className="flex-none p-3 border-t border-gray-700">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={playerInput}
+                      onChange={(e) => setPlayerInput(e.target.value)}
+                      placeholder="What would you like to say?"
+                      className="flex-1 p-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                      onKeyPress={(e) => e.key === 'Enter' && currentNPC && handleNPCInteraction(currentNPC.id)}
+                    />
+                    <button
+                      onClick={() => currentNPC && handleNPCInteraction(currentNPC.id)}
+                      className="px-3 py-2 bg-blue-600/50 hover:bg-blue-600 border border-blue-500 rounded-lg transition-colors text-sm"
+                      disabled={!currentNPC}
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <button
-          onClick={resetGame}
-          className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500 transition-colors"
-        >
-          Reset Loop
-        </button>
       </div>
     </div>
   )
