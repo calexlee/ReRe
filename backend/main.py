@@ -116,18 +116,23 @@ async def interact_with_npc(npc_id: str, request: InteractionRequest = Body(...)
     )
 
     # Update game state with interaction results
-    game_state.advance_time(5)  # Each interaction takes 5 minutes
+    game_state.advance_time(interaction_result["state_changes"]["time_cost"] * 60)  # Convert hours to minutes
     game_state.add_event({
         "type": "npc_interaction",
         "npc_id": npc_id,
         "player_input": request.player_input,
+        "npc_response": ai_response,
         "timestamp": game_state.world_state.get("time", "08:00")
     })
+
+    # Update NPC state in game state
+    game_state.update_npc_state(npc_id, interaction_result["state_changes"]["npc_state"])
 
     return {
         "response": ai_response,
         "state_changes": interaction_result["state_changes"],
-        "time_advanced": True
+        "time_advanced": True,
+        "current_time": game_state.world_state.get("time", "08:00")
     }
 
 @app.post("/game/player/knowledge")

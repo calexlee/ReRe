@@ -1,0 +1,59 @@
+{
+    "elder": {
+        "id": "elder",
+        "name": "Elder Thalric",
+        "description": "The village elder, wise but secretive",
+        "location": "village_square",
+        "personality": {
+            "traits": ["wise", "secretive", "protective"],
+            "goals": ["protect the village", "maintain order"],
+            "fears": ["chaos", "outsiders"],
+            "secrets": ["knows about the time loop"]
+        },
+        "initial_state": {
+            "mood": "neutral",
+            "trust_level": 0,
+            "known_secrets": [],
+            "current_goal": null,
+            "memories": []
+        }
+    },
+    "blacksmith": {
+        "id": "blacksmith",
+        "name": "Gorrik the Blacksmith",
+        "description": "A burly blacksmith with a mysterious past",
+        "location": "forge",
+        "personality": {
+            "traits": ["strong", "mysterious", "loyal"],
+            "goals": ["protect his family", "keep his past hidden"],
+            "fears": ["his past being revealed"],
+            "secrets": ["was once a royal guard"]
+        },
+        "initial_state": {
+            "mood": "neutral",
+            "trust_level": 0,
+            "known_secrets": [],
+            "current_goal": null,
+            "memories": []
+        }
+    },
+    "apothecary": {
+        "id": "apothecary",
+        "name": "Mistress Althea",
+        "description": "The village apothecary, knowledgeable about herbs and potions",
+        "location": "apothecary_shop",
+        "personality": {
+            "traits": ["knowledgeable", "curious", "helpful"],
+            "goals": ["find a cure", "help the villagers"],
+            "fears": ["the plague spreading"],
+            "secrets": ["has discovered a potential cure"]
+        },
+        "initial_state": {
+            "mood": "neutral",
+            "trust_level": 0,
+            "known_secrets": [],
+            "current_goal": null,
+            "memories": []
+        }
+    }
+} 
