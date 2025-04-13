@@ -112,13 +112,13 @@ You know these secrets: {', '.join(npc.personality['secrets'])}."""},
         memory_context = "\n".join([f"- {memory}" for memory in memories])
         
         return f"""
-        You are {npc.name}, a character in a time loop game. Keep your responses natural and concise (1-2 sentences max).
-        
+        You are {npc.name}, a character in a time loop game. You are NOT the player. You are an NPC that the player interacts with.
+
         Current situation:
         - Loop #{context.get('current_loop', 1)}
         - Time: {context.get('time', 'morning')}
         - You're in the {npc.location.replace('_', ' ')}
-        - Player is in the {context.get('location', 'unknown').replace('_', ' ')}
+        - The player is in the {context.get('location', 'unknown').replace('_', ' ')}
         
         Your personality:
         - Traits: {', '.join(npc.personality['traits'])}
@@ -129,8 +129,17 @@ You know these secrets: {', '.join(npc.personality['secrets'])}."""},
         Recent interactions:
         {memory_context}
         
-        Player says: "{player_input}"
+        The player says to you: "{player_input}"
         
-        Respond naturally and briefly, as if in a real conversation. Don't explain your thoughts or feelings unless asked.
-        Keep responses under 20 words when possible.
+        Respond as {npc.name} would respond. Remember:
+        - You are the NPC, not the player
+        - Keep responses brief and natural
+        - Stay in character based on your personality
+        - Don't break the fourth wall or acknowledge being an AI
+        - Don't explain your thoughts or feelings unless asked
+        - Keep responses under 20 words when possible
+        - Only respond with what {npc.name} would say, nothing else
+        - Do not include the player's words in your response
+        - Do not use phrases like "Player:" or "NPC:" in your response
+        - Do not quote or repeat what the player said
         """ 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { GameState, NPC, InteractionResult } from './types/game'
 
@@ -24,6 +24,18 @@ function App() {
   const [currentLocation, setCurrentLocation] = useState('village_square');
   const [locationNPCs, setLocationNPCs] = useState<NPC[]>([]);
   const [chatHistory, setChatHistory] = useState<{ speaker: string; message: string }[]>([]);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when chat history changes
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      const container = chatContainerRef.current;
+      const shouldScroll = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+      if (shouldScroll) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+  }, [chatHistory, npcResponse]);
 
   useEffect(() => {
     fetchGameState();
@@ -159,7 +171,7 @@ function App() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         <div className="max-w-7xl mx-auto w-full p-3">
-          <div className="grid grid-cols-12 h-full gap-3">
+          <div className="grid grid-cols-12 h-[calc(100vh-4rem)] gap-3">
             {/* Left Sidebar - Minimap and NPCs */}
             <div className="col-span-3 flex flex-col gap-3 h-full">
               {/* Minimap */}
@@ -222,7 +234,11 @@ function App() {
                 </div>
 
                 {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                <div 
+                  ref={chatContainerRef}
+                  className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2 scroll-smooth"
+                  style={{ scrollBehavior: 'smooth' }}
+                >
                   {chatHistory.map((chat, index) => (
                     <div
                       key={index}
@@ -251,7 +267,7 @@ function App() {
                 </div>
 
                 {/* Input Area */}
-                <div className="flex-none p-3 border-t border-gray-700">
+                <div className="flex-none p-3 border-t border-gray-700 bg-gray-800/50">
                   <div className="flex gap-2">
                     <input
                       type="text"
