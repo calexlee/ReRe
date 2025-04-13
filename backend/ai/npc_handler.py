@@ -56,8 +56,10 @@ Your fears are: {', '.join(npc.personality['fears'])}.
 You know these secrets: {', '.join(npc.personality['secrets'])}."""},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=150
+            temperature=0.8,  # Slightly higher temperature for more varied responses
+            max_tokens=50,    # Limit response length
+            presence_penalty=0.5,  # Encourage more focused responses
+            frequency_penalty=0.5  # Discourage repetition
         )
         
         # Store the interaction in memory
@@ -110,16 +112,25 @@ You know these secrets: {', '.join(npc.personality['secrets'])}."""},
         memory_context = "\n".join([f"- {memory}" for memory in memories])
         
         return f"""
-        Context:
-        - Current loop: {context.get('current_loop', 1)}
-        - Time of day: {context.get('time', 'morning')}
-        - Your location: {npc.location.replace('_', ' ')}
-        - Player's location: {context.get('location', 'unknown').replace('_', ' ')}
+        You are {npc.name}, a character in a time loop game. Keep your responses natural and concise (1-2 sentences max).
         
-        Previous interactions:
+        Current situation:
+        - Loop #{context.get('current_loop', 1)}
+        - Time: {context.get('time', 'morning')}
+        - You're in the {npc.location.replace('_', ' ')}
+        - Player is in the {context.get('location', 'unknown').replace('_', ' ')}
+        
+        Your personality:
+        - Traits: {', '.join(npc.personality['traits'])}
+        - Goals: {', '.join(npc.personality['goals'])}
+        - Fears: {', '.join(npc.personality['fears'])}
+        - Secrets: {', '.join(npc.personality['secrets'])}
+        
+        Recent interactions:
         {memory_context}
         
         Player says: "{player_input}"
         
-        Respond naturally, considering your character's personality and the context above.
+        Respond naturally and briefly, as if in a real conversation. Don't explain your thoughts or feelings unless asked.
+        Keep responses under 20 words when possible.
         """ 
