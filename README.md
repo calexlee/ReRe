@@ -45,7 +45,7 @@ npm run dev
 ## Project Structure
 
 ```
-timeloop-tales/
+ReRe/
 ├── frontend/          # React + Tailwind frontend
 ├── backend/           # FastAPI backend
 ├── ai/               # AI integration and utilities
@@ -82,20 +82,6 @@ Create a `.env` file in both frontend and backend directories with:
 - OpenAI API key
 - Other necessary API keys
 
-## MVP Features
-- Dark fantasy village setting
-- 3-5 NPCs with persistent dialogue memory
-- Time loop mechanics
-- Basic vector memory system
-- One core mystery/death event
-
-## Future Improvements
-- Additional settings (sci-fi, noir, historical)
-- Custom setting/character creation
-- Enhanced AI memory systems
-- Procedural event generation
-- Multiplayer support
-
 ## External Setup Required
 1. Firebase Project Setup
    - Create a new Firebase project
@@ -111,6 +97,3 @@ Create a `.env` file in both frontend and backend directories with:
 3. Vector Database
    - Set up Pinecone or FAISS
    - Configure memory storage
-
-## Contributing
-Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests. 
